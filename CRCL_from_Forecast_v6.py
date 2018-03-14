@@ -161,7 +161,7 @@ for counter in range(0, count):
         loc_riverSection = riverSections["value"][counter]['Locations'][0]['location']['coordinates']
 
         # ΘΑ ΠΡΕΠΕΙ ΝΑ ΑΛΛΑΞΕΙ ΣΕ ΠΡΑΓΜΑΤΙΚΟ ΤΡΕΞΙΜΟ. ΝΑ ΔΙΑΓΡΑΦΕΙ ΧΡΗΣΗ ΠΡΑΓΜΑΤΙΚΩΝ ΚΑΤΩΦΛΙΩΝ
-        thresh = [20, 30, 35]
+        thresh = [25, 35, 40]
 
         # Extract the observations WL forecasted values and stored in the array yValues
         Obs_yV_length = len(response_forecast['Datastreams'][0]['Observations'])
@@ -219,7 +219,7 @@ for counter in range(0, count):
 
             if flag_last_run == True:
                 lastRunID = response_forecast['Datastreams'][0]["properties"]["lastRunId"]
-                dataStreamID = lastRunID
+                dataStreamID = str(lastRunID) + "_" + str(datetime.now().microsecond)
                 dataStreamDescript = "AMICO predictions of water level in the last run with ID:" + str(lastRunID)
             else:
                 ObsRunID = response_forecast['Datastreams'][0]['Observations'][0]["parameters"]["runId"]

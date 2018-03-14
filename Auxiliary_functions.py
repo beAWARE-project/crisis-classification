@@ -202,3 +202,15 @@ def calculate_hazard(hf_val):
         Hazard = {'Value': 1.0, 'Description': 'High hazard'}
 
     return(Hazard)
+
+#--------------------------------------------------------------------------------------------------
+# Calculates the Vulnerability based on the value of WL and element_at_risk (exposure field)
+# coming from the APP
+#
+# Output: Vulnerability which consists of Vp (vulnerability of people),
+#            Ve (vulnerability of economic activities)
+#        and Va (vulnerability of environments and cultural assets)
+#
+#calculate_vulnerability( WL, element_at_risk ):
+
+#    if len()
