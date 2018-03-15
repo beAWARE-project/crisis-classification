@@ -189,6 +189,80 @@ def generalized_mean(freqs, scale, p):
     return(gen_mean)
 
 #--------------------------------------------------------------------------------------------------
+# Calculates the Overall Crisis Classification Index per group of river sections and total
+#
+#   Input: a list of dictionaries, each one corresponds to each group of river sections and
+#           contains a vector with frequencies of each scale 'count':[n0, n1, n2, n3]
+#
+#   Output: a list of Overall_Crisis_Classification_Index per group of river sections and total
+#
+def Overall_Crisis_Classification_Index( RiverSect_CountScale ):
+
+    Overall_Crisis_Index = []
+    total = None
+
+    # find the maximum scale for each one of the group of river sections
+    for it in range( len(RiverSect_CountScale) ):
+
+        counts = RiverSect_CountScale[it]['count']
+        max_scale = max(counts)
+
+        if max_scale > 0:
+            maxIndexList = [i for i, j in enumerate(counts) if j == max_scale]
+            last_max_pos = max(maxIndexList)
+
+            # Update total max occi
+            if total == None or total <= last_max_pos:
+                total = last_max_pos
+        else:
+            last_max_pos = None
+
+        if last_max_pos != None:
+            if last_max_pos == 0:
+                col = '#00FF00'  # green
+                note = 'Low'
+            elif last_max_pos == 1:
+                col = '#FFFF00'  # yellow
+                note = "Medium"
+            elif last_max_pos == 2:
+                col = '#FFA500'  # orange
+                note = "High"
+            else:
+                col = '#FF0000'  # red
+                note = "Very High"
+        else:
+            col = None
+            note = None
+
+        Overall_Crisis_Index += [ {'name': RiverSect_CountScale[it]['name'],
+                                   'occi': last_max_pos,
+                                   'color': col,
+                                   'note': note} ]
+
+    # Add the total Overall Crisis Classification Index
+    if total != None:
+        if total == 0:
+            col = '#00FF00' # green
+            note = 'Low'
+        elif total == 1:
+            col = '#FFFF00'  # yellow
+            note = "Medium"
+        elif total == 2:
+            col = '#FFA500'  # orange
+            note = "High"
+        else:
+            col = '#FF0000'  # red
+            note = "Very High"
+    else:
+        col = None
+        note = None
+
+    Overall_Crisis_Index += [ {'name': 'TOTAL', 'occi': total, 'color': col, 'note': note} ]
+
+    return(Overall_Crisis_Index)
+
+
+#--------------------------------------------------------------------------------------------------
 # Calculates the hazard based on the value of hazard field (hf_val) in the APP
 # Output: 0 <= Hazard <= 1
 #
