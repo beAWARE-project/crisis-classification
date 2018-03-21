@@ -212,7 +212,7 @@ def extract_forecasts(service_root_URI, SensorThings, ids, sel_vals, ord_val, la
 #
 # %20or%20startswith(name,%27Water%20Level%27))
 # ;$filter=phenomenonTime eq 2018-02-11T23:00:00.000Z
-#
+#e
 def extract_from_WS_Sensors(service_root_URI, SensorThings, sel_vals, ord_val, filter_args, filter_vals):
 
     op_filter = '$filter'
