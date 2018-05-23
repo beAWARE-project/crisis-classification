@@ -1,6 +1,6 @@
 FROM python:3
 
-COPY src/main/crcl/.py /usr/src/crcl/
+COPY src/main/crcl/* /usr/src/crcl/
 
 WORKDIR /usr/src/crcl/
 
