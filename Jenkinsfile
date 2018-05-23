@@ -11,7 +11,7 @@ node ('beaware-jenkins-slave') {
 
     stage ('Push docker image') {
         withDockerRegistry([credentialsId: 'dockerhub-credentials']) {
-		sh 'docker push beaware/crisis-classification${BUILD_NUMBER}'
+		sh 'docker push beaware/crisis-classification:${BUILD_NUMBER}'
         }
     }
 
