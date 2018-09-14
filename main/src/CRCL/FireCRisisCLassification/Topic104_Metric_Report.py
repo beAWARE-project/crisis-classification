@@ -78,8 +78,8 @@ class Top104_Metric_Report:
         self.body["language"]= self.topic_language
         self.body["dataStreamCategory"]= self.topic_dataStreamCategory
         self.body["dataStreamSubCategory"]= self.topic_dataStreamSubCategory
-        self.body["position"] = [{"longitude": self.topic_position["longitude"],
-                                  "latitude": self.topic_position["latitude"]}]
+        self.body["position"] = {"longitude": self.topic_position["longitude"],
+                                  "latitude": self.topic_position["latitude"]}
         self.body["measurements"]= self.measurements
 
     # Create the list of measurements for the class object
