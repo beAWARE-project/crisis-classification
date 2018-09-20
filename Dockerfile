@@ -1,6 +1,6 @@
 FROM python:3.6.3
 
-COPY main/src/ /usr/src/
+COPY main/src/* /usr/src/
 
 RUN pip install confluent-kafka
 RUN pip install netCDF4
