@@ -7,3 +7,8 @@ metadata:
 spec:
   selector:
     app: crisis-classification
+  ports:
+  - name: http
+    port: 8899
+    protocol: TCP
+targetPort: 2088
