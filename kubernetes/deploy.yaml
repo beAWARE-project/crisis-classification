@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         name: crisis-classification
         ports:
-        - containerPort: 80
+        - containerPort: 2088
           name: http
           protocol: TCP
         resources:
