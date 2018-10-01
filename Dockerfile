@@ -7,11 +7,11 @@ RUN pip install confluent-kafka
 RUN pip install netCDF4
 RUN pip install xmltodict
 RUN pip install requests
-RUN pip install pandas
 RUN pip install matplotlib
 RUN pip install scipy
 RUN pip install xlrd 
 RUN pip install openpyxl
+RUN pip install pandas==0.20.3
 
 WORKDIR /usr/src/CRCL/FireCRisisCLassification
 RUN wget https://www.dropbox.com/s/41usi36d7b7g0s3/20180612_fwishort.tar
