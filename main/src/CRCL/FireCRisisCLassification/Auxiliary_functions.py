@@ -515,6 +515,11 @@ def get_ftp(url, Username, Password):
 
     if flag == True:
         print("File already exists and has same size as ftp files")
+        tar = tarfile.open(PATH_flname)
+        for member in tar.getmembers():
+            if not os.path.exists(PATH+member.name):
+                tar.extractall(PATH)
+        tar.close()
     else:
         start_time = time.time()
 
@@ -525,7 +530,7 @@ def get_ftp(url, Username, Password):
 
         # unrar
         tar = tarfile.open(PATH_flname)
-        tar.extractall()
+        tar.extractall(PATH)
         tar.close()
 
         # how much time used for download
