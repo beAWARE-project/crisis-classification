@@ -1,5 +1,5 @@
 from confluent_kafka import Producer
-from bus import rest
+import bus.rest
 import json
 
 
@@ -8,7 +8,8 @@ class BusProducer:
 
         # Pre-shared credentials
         self.credentials = {
-            "api_key": "BPWTh17zQ2kDvxuvmSoHqZEHEbbu6izktAHKC8aD2EGDVNeO",
+            # "api_key": "BPWTh17zQ2kDvxuvmSoHqZEHEbbu6izktAHKC8aD2EGDVNeO",
+            "api_key": "L7QLQDexe9rVuu2n63bnHbrVEAkNLLyzQA6wNPHdUuCKd0Mp",
             "kafka_admin_url": "https://kafka-admin-prod02.messagehub.services.eu-gb.bluemix.net:443",
             "kafka_brokers_sasl": [
                 "kafka03-prod02.messagehub.services.eu-gb.bluemix.net:9093",
@@ -59,7 +60,7 @@ class BusProducer:
 
         # Create rest client to handle topics
         try:
-            rest_client = rest.MessageHubRest(self.credentials['kafka_admin_url'], self.credentials['api_key'])
+            rest_client = bus.rest.MessageHubRest(self.credentials['kafka_admin_url'], self.credentials['api_key'])
         except Exception as e:
             print(e)
             return False

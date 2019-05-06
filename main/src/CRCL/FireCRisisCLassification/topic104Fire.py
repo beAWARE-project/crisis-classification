@@ -1,26 +1,39 @@
-# Created Date: 06/06/2018
-# Modified Date: 12/09/2018
-#
-#   Main function to create TOPICS 104 for the fire pilot
-#
-
-from CRCL.FireCRisisCLassification.Topic104_Metric_Report import Top104_Metric_Report
-from datetime import datetime, timedelta
-from bus.bus_producer import BusProducer
-
-from pathlib import Path
-from collections import OrderedDict
 import json, time, re
+import os, errno, sys
+import glob, gzip, pickle, shutil, tempfile, re, tarfile
+import numpy as np
+import pandas as pd
+
+from scipy.interpolate import griddata
+from scipy.interpolate import Rbf
+from scipy import interpolate
+from netCDF4 import Dataset, num2date
+import netCDF4
+from bus.bus_producer import BusProducer
+from pathlib import Path
+from datetime import datetime, timedelta
+from ftplib import FTP
+
+from CRCL.FireCRisisCLassification.Topic104_Metric_Report import *
+from datetime import datetime, timedelta
 
 
-def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
+def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method, dts):
+    directory_PFWI = directory + "/" + "Topics_PFWI" + '/' + "DateNo" + str(dts)
+    os.makedirs(directory_PFWI, exist_ok=True)
+
+    directory_maxPFWI = directory + "/" + 'Topics_maxPFWI' + '/' + "DateNo" + str(dts)
+    os.makedirs(directory_maxPFWI, exist_ok=True)
+
+    directory_overallFWI = directory + "/" + 'Topics_OverallFWI' + '/' + "DateNo" + str(dts)
+    os.makedirs(directory_overallFWI, exist_ok=True)
 
     counter_topics = 0
 
-    print(" df_1st = ", df['Fire_Danger'].unique())
-    print(" df_max = ", df_max['Fire_Danger'].unique())
+    #     print(" df_1st = ", df['Fire_Danger'].unique())
+    #     print(" df_max = ", df_max['Fire_Danger'].unique())
 
-    producer = BusProducer()
+    # producer = BusProducer()
 
     # Decorate terminal
     print('\033[95m' + "\n***********************")
@@ -97,12 +110,12 @@ def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
             top104_fwi['body'] = fwi_msg.body
 
             # write json (top104_forecast) to output file
-            flname = directory + "/" + 'FireWeatherIndex_' + str(i) + ".txt"
+            flname = directory_PFWI + '/' + 'FireWeatherIndex_' + str(i) + ".txt"
             with open(flname, 'w') as outfile:
                 json.dump(top104_fwi, outfile, indent=4)
 
             print('Send ' + str(i) + ' message: Fire Weather Index has been forwarded to logger!')
-            producer.send("TOP104_METRIC_REPORT", top104_fwi)
+            # producer.send("TOP104_METRIC_REPORT", top104_fwi)
             counter_topics += 1
 
     # ----------------------------------------------------------------------------------
@@ -175,12 +188,12 @@ def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
             top104_maxfwi['body'] = maxfwi_msg.body
 
             # write json (top104_forecast) to output file
-            flname = directory + "/" + 'FireWeatherIndex_MAX_' + str(i) + ".txt"
+            flname = directory_maxPFWI + "/" + 'FireWeatherIndex_MAX_' + str(i) + ".txt"
             with open(flname, 'w') as outfile:
                 json.dump(top104_maxfwi, outfile, indent=4)
 
             print('Send ' + str(i) + ' message: Max Fire Weather Index has been forwarded to logger!')
-            producer.send("TOP104_METRIC_REPORT", top104_maxfwi)
+            # producer.send("TOP104_METRIC_REPORT", top104_maxfwi)
             counter_topics += 1
 
     # ------------------------------------------------------------
@@ -194,10 +207,11 @@ def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
     dataStreamCategory = "Fire"
     dataStreamSubCategory = ""
 
-    #valid_values = ['Moderate', 'High', 'Very High', 'Extreme']
-    valid_values = ['High', 'Very High', 'Extreme']
+    # valid_values = ['Moderate', 'High', 'Very High', 'Extreme']
+    # valid_values = ['High', 'Very High', 'Extreme']
+    valid_values = ['Very Low', 'Low', 'Moderate', 'High', 'Very High', 'Extreme']
 
-    #valid_values = df['Fire_Danger'].unique().split()[0]
+    # valid_values = df['Fire_Danger'].unique().split()[0]
     print("valid values= ", valid_values)
 
     for it, item in enumerate(FOCL_list, 1):
@@ -234,8 +248,8 @@ def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
 
             # create the measurements of the object
             #
-            #ovfcl_msg.topic_yValue = [item['val']]
-            ovfcl_msg.topic_yValue = [round(item['val_rescale'],2)]
+            ovfcl_msg.topic_yValue = [item['val']]
+            # ovfcl_msg.topic_yValue = [round(item['val_rescale'],2)]
 
             ovfcl_msg.topic_measurementID = [int(round(time.time() * 1000))]
 
@@ -261,13 +275,14 @@ def topic104Fire(directory, df, df_max, FOCL_list, categories, interp_method):
             top104_fcl['body'] = ovfcl_msg.body
 
             # write json (top104_forecast) to output file
-            flname = directory + "/" + 'FireCrisisLevel_' + str(counter_topics) + ".txt"
+            flname = directory_overallFWI + "/" + 'FireCrisisLevel_' + str(counter_topics) + ".txt"
             with open(flname, 'w') as outfile:
                 json.dump(top104_fcl, outfile, indent=4)
 
             print('Send ' + str(counter_topics) + ' message: Overall Fire Weather Index has been forwarded to logger!')
-            producer.send("TOP104_METRIC_REPORT", top104_fcl)
+            # producer.send("TOP104_METRIC_REPORT", top104_fcl)
             counter_topics += 1
 
     print("Number of topics forwarded: ", counter_topics)
     return (counter_topics)
+

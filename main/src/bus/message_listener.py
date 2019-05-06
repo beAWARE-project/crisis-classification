@@ -16,7 +16,10 @@ class ListenerThread(threading.Thread):
         self.consumer = BusConsumer()
 
         # Start listening to bus
+       # self.consumer.listen(self.topics)
+        # print(self.topics) #deixnei to 'TOP105_CRCL_INITIALIZATION'
         self.consumer.listen(self.topics)
+
 
     def stop(self):
         self.consumer.stop()
@@ -24,15 +27,4 @@ class ListenerThread(threading.Thread):
     def get_topics(self):
         return self.topics
 
-def runListenThread():
-    # Create new threads
-    thread1 = ListenerThread(['TOP105_CRCL_INITIALIZATION'])
 
-    # Start new Threads
-    thread1.start()
-
-    print("Exiting Main Thread")
-    
-if __name__ == "__main__":
-    runListenThread()
-    

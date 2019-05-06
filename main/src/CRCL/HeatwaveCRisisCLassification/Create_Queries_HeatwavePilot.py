@@ -213,3 +213,34 @@ def extract_forecasts_latlng(fmi_addr, my_api_key, data_format, parameters, poin
         print(query, "\n")
 
     return(query_list)
+
+
+#------------------------------------------------------------------------------------------
+#   Query to extract real-time weather values from a place defined by lat/long coordinates
+#   at current date time from Dark Sky API
+#
+# https://api.darksky.net/forecast/60bc19179a97cf8ca2e69d6f580afcf1/40.60401,22.97893?exclude=minutely,hourly,daily,alerts,flags&units=si
+
+def extract_realtime_weather_darksky(darksky_addr, my_api_key, exclude_parameters, points):
+
+    request = darksky_addr + my_api_key
+
+    # create the parameter value of the query which are going to exclude
+    query_excl_parameters = ""
+    for itp in range(len(exclude_parameters)-1):
+        query_excl_parameters += exclude_parameters[itp] + ","
+
+    query_excl_parameters += exclude_parameters[len(exclude_parameters) - 1]
+
+    query_list = []
+    for it in range(len(points)):
+        # create the latlon value of the query parameter
+        latlon_pos = str(points[it]['lat']) + "," + str(points[it]['long'])
+
+        query = request + "/" + latlon_pos + "?" + "exclude=" + query_excl_parameters + "&" + "units=si"
+        print(query)
+
+        query_list.append(query)
+
+    return(query_list)
+

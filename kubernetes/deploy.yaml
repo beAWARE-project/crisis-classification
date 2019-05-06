@@ -21,7 +21,7 @@ spec:
         app: crisis-classification
     spec:
       containers:
-      - image: beaware/crisis-classification:IMAGE_TAG
+      - image: beaware/crisis-classification:v2
         imagePullPolicy: Always
         name: crisis-classification
         ports:

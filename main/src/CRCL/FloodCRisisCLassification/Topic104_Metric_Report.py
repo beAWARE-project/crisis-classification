@@ -43,9 +43,18 @@ class Top104_Metric_Report:
         self.topic_yValue = []
         self.topic_meas_color = []
         self.topic_meas_note = []
+        self.topic_meas_category = []
         self.header = None
         self.body = None
         self.measurements = []
+
+        # threshold variables
+        self.topic_thresh_note = []
+        self.topic_thresh_color = []
+        self.topic_thresh_xValue = []
+        self.topic_thresh_yValue = []
+        self.thresholds = []
+
 
     # Create the header of the class object
     def create_dictHeader(self):
@@ -78,11 +87,51 @@ class Top104_Metric_Report:
         self.body["language"]= self.topic_language
         self.body["dataStreamCategory"]= self.topic_dataStreamCategory
         self.body["dataStreamSubCategory"]= self.topic_dataStreamSubCategory
-        self.body["position"] = {"longitude": self.topic_position["longitude"],
-                                  "latitude": self.topic_position["latitude"]}
         self.body["measurements"]= self.measurements
 
+    # Create the body of the class object with the Thresholds
+    def create_dictBody_withThresh(self):
+        self.body = OrderedDict()
+
+        self.body["dataStreamGenerator"] = self.topic_dataStreamGenerator
+        self.body["dataStreamID"] = self.topic_dataStreamID
+        self.body["dataStreamName"] = self.topic_dataStreamName
+        self.body["dataStreamDescription"] = self.topic_dataStreamDescription
+        self.body["language"] = self.topic_language
+        self.body["dataStreamCategory"] = self.topic_dataStreamCategory
+        self.body["dataStreamSubCategory"] = self.topic_dataStreamSubCategory
+        self.body["measurements"] = self.measurements
+
+        item = {"id": self.topic_dataSeriesID[0], "threshold": self.thresholds}
+        self.body["thresholds"]= { "dataSeriesIDThresholds": [item] }
+
     # Create the list of measurements for the class object
+    def create_dictMeasurements_Categ(self):
+        for (cid, ctime, cx, cy, ccol, cnote, ccateg, dsID,dsN) in zip(self.topic_measurementID,
+                                                     self.topic_measurementTimeStamp,
+                                                     self.topic_xValue,
+                                                     self.topic_yValue,
+                                                     self.topic_meas_color,
+                                                     self.topic_meas_note,
+                                                     self.topic_meas_category,
+                                                     self.topic_dataSeriesID,
+                                                     self.topic_dataSeriesName):
+            temp_meas = OrderedDict()
+            temp_meas["measurementID"]= cid
+            temp_meas["measurementTimeStamp"]= ctime
+            temp_meas["dataSeriesID"]= dsID
+            temp_meas["dataSeriesName"]= dsN
+            temp_meas["position"] = {"longitude": self.topic_position["longitude"],
+                                     "latitude": self.topic_position["latitude"]}
+            temp_meas["xValue"] = cx
+            temp_meas["yValue"] = cy
+            temp_meas["color"] = ccol
+            temp_meas["note"] = cnote
+            temp_meas["category"] = ccateg
+
+            self.measurements += [temp_meas]
+
+    # Create the list of measurements without category for the class object
     def create_dictMeasurements(self):
         for (cid, ctime, cx, cy, ccol, cnote, dsID,dsN) in zip(self.topic_measurementID,
                                                      self.topic_measurementTimeStamp,
@@ -97,38 +146,32 @@ class Top104_Metric_Report:
             temp_meas["measurementTimeStamp"]= ctime
             temp_meas["dataSeriesID"]= dsID
             temp_meas["dataSeriesName"]= dsN
-            temp_meas["xValue"]= cx
-            temp_meas["yValue"]= cy
-            temp_meas["color"]= ccol
-            temp_meas["note"]= cnote
+            temp_meas["position"] = {"longitude": self.topic_position["longitude"],
+                                     "latitude": self.topic_position["latitude"]}
+            temp_meas["xValue"] = cx
+            temp_meas["yValue"] = cy
+            temp_meas["color"] = ccol
+            temp_meas["note"] = cnote
 
             self.measurements += [temp_meas]
 
+    #--------------------------------------------------------------
+    # Create the list of thresholds
+    def create_dictThresholds(self):
 
-    # Print an object of the class  -- OBSOLETE MAYBE WRONG
-    # def displayTopic104(self):
-    #      print("\n Topic 104 is: \n")
-    #      print('Name: ', self.topic_name)
-    #      print('Major Version: ', self.topic_MajorVersion)
-    #      print('Minor Version: ', self.topic_MinorVersion)
-    #      print('Sender: ', self.topic_sender)
-    #      print('Status: ', self.topic_status)
-    #      print('MsgIdentifier: ', self.topic_msgIdentifier)
-    #      print('Sent UTC: ', self.topic_sentUTC)
-    #      print('Action Type: ', self.topic_actionType)
-    #      print('Scope: ', self.topic_scope)
-    #      print('District: ', self.topic_district)
-    #      print('Code: ', self.topic_code)
-    #      print('References: ', self.topic_references)
-    #      print('Note:', self.topic_note)
-    #      print('Specific sender: ', self.topic_specificSender)
-    #      print('Recipients :', self.topic_recipients)
-    #      print('DataStreamGenerator: ', self.topic_dataStreamGenerator)
-    #      print('Stream ID:', self.topic_dataStreamID)
-    #      print('DataStream Name: ', self.topic_dataStreamName)
-    #      print('DataStream Description: ', self.topic_dataStreamDescription)
-    #      print('Language: ', self.topic_language)
-    #      print('DataStreamCategory: ', self.topic_dataStreamCategory)
-    #      print('DataStreamSubCategory:', self.topic_dataStreamSubCategory)
-    #      print('Position: [', self.topic_position["latitude"], ',', self.topic_position["longitude"], ']')
-    #      print('Measurements: [', self.measurements, ']')
+        for (cnote, cx, cy, ccol) in zip(self.topic_thresh_note,
+                                         self.topic_thresh_xValue,
+                                         self.topic_thresh_yValue,
+                                         self.topic_thresh_color):
+
+            temp_thresh = OrderedDict()
+            temp_thresh["note"] = cnote
+            temp_thresh["xValue"] = cx
+            temp_thresh["yValue"] = cy
+            temp_thresh["color"] = ccol
+
+            self.thresholds += [temp_thresh]
+
+
+
+

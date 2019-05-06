@@ -158,6 +158,43 @@ def parse_XML_to_dict_querylist(qrlist, points, directory):
         # Drop NaNs from data frame
         cleaned_ds = ds.dropna()
 
-        df = pd.concat([df, cleaned_ds], ignore_index=True)
+        df = pd.concat([df, cleaned_ds], ignore_index=True, sort=True)
+
+    return(df)
+
+
+#----------------------------------------------------------------------
+def parse_json_to_dict_querylist(qrlist, points, directory):
+
+    # data frame to return
+    df = pd.DataFrame(columns=['Name', 'Lat', 'Long', 'DateTime', 'Temperature', 'Humidity'])
+
+    # write dictionary to output file
+    outflname = directory + "/" + "responses_RealTime_Weather_Measurements.txt"
+    outfln = open(outflname, 'w')
+
+    for qrit in range(0, len(qrlist)):
+
+        # read from url - execute the query and the response is stored to json obj
+        with urllib.request.urlopen(qrlist[qrit]) as url:
+            response = json.loads(url.read().decode())
+
+        # Write the response (jsons) to file
+        json.dump(OrderedDict(response), outfln)
+        outfln.write("\n ------------------------------ \n")
+
+        ds = []
+        ds.append( points[qrit]['name'] )
+        ds.append( response['latitude'] )
+        ds.append( response['longitude'] )
+
+        # transform integer to date/time
+        dtm = datetime.utcfromtimestamp(int( response['currently']['time'] )).isoformat()
+        ds.append( dtm )
+
+        ds.append( response['currently']['temperature'] )
+        ds.append( response['currently']['humidity'] )
+
+        df.loc[len(df)] = ds
 
     return(df)

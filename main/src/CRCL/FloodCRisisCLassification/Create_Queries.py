@@ -115,7 +115,8 @@ def extract_stations_river(service_root_URI, SensorThings, filter_vals=None, sel
 # Things(390)
 # ? $expand=Locations, Datastreams($select=id,name,properties
 # ; $expand=Observations($select=result,phenomenonTime, id
-# ; $filter= phenomenonTime%20ge%202018-01-26T14:00:00.000Z and
+# ; $filter= parameters/runId%20eq%20Datastream/properties/lastRunId%20add%200 %20and%20
+#            phenomenonTime%20ge%202018-01-26T14:00:00.000Z and
 #            phenomenonTime%20le%202018-01-27T14:00:00.000Z
 # ; $orderby=phenomenonTime%20asc
 # ; $top=1000) ) )
@@ -137,7 +138,7 @@ def extract_forecasts(service_root_URI, SensorThings, ids, sel_vals, ord_val, la
     op_ge = '%20ge%20'
     op_and = '%20and%20'
 
-    resource_path = service_root_URI + SensorThings[0] + '(' + ids['th_id'] + ')'
+    resource_path = service_root_URI + SensorThings[0] + '(' + str(ids['th_id']) + ')'
 
     if sel_vals['dstr_sel'] != None:
        sel1 = op_select + "="
@@ -178,9 +179,11 @@ def extract_forecasts(service_root_URI, SensorThings, ids, sel_vals, ord_val, la
                        filt1 = filt1 + filter_args['obs_filt'][i-1] + op_ge + filter_vals['obs_filt_vals'][0] + \
                                op_and + filter_args['obs_filt'][i-1] + op_le + filter_vals['obs_filt_vals'][1]
 
+               # filt1 = filt1 + op_and + 'parameters/runId' + op_eq + '1299' + op_add + '0'
+               filt1 = filt1 + op_and + 'parameters/runId' + op_eq + 'Datastream/properties/lastRunId' + op_add + '0'
+
     lev_q2 = ';' + op_expand + "=" + SensorThings[3] + \
             "(" + sel2 + ";" + filt1 + ";" + op_order + "=" + ord_val[0] + ";" + op_top + "=" + '1000' + ")"
-
 
     query = resource_path + '?' + op_expand + "=" + SensorThings[1] + "," + SensorThings[2] + "(" + sel1 + lev_q2 + ")"
     #print(query)
@@ -295,12 +298,14 @@ def extract_from_WS_Sensors(service_root_URI, SensorThings, sel_vals, ord_val, f
 # & $expand=Datastreams($filter=startswith(name, %27Water%27)
 # ; $select=id,phenomenonTime,name)
 #
-def extract_station_datastream(service_root_URI, SensorThings, sel_vals, filter_args, filter_vals):
+def extract_station_datastream(service_root_URI, SensorThings, sel_vals, filter_args, filter_vals, Starting_DateTime, flag, Num_Interest_Obs):
 
     op_filter = '$filter'
     op_select = '$select'
     op_expand = '$expand'
     op_eq = '%20eq%20'
+    #top='$top=24'
+    top = '$top=' + str(Num_Interest_Obs)
 
     resource_path = service_root_URI + SensorThings[0]
 
@@ -317,11 +322,23 @@ def extract_station_datastream(service_root_URI, SensorThings, sel_vals, filter_
         sel_Datastream = sel_Datastream + sel_vals['dstr_sel'][len_dstr_sel - 1]
 
 
-    query = resource_path + '?' + filt_Thing + "&" + op_expand + "=" + SensorThings[1] + "(" + \
-           filt_Dstr + ";" + sel_Datastream + ")"
+    # if its Real Time dont use Order By
+    if flag == True:
+
+        query = resource_path + '?' + filt_Thing + "&" + op_expand + "=" + SensorThings[1] + "(" + \
+            filt_Dstr  + '%20and%20properties/type%20eq%20%27measurement%27;' + op_expand + '=' + SensorThings[2] + '(' + op_filter + '=' + \
+            sel_vals['dstr_sel'][2] + "%20le%20" + Starting_DateTime + "%20%20;"+'$orderby=phenomenonTime%20desc;' + top + "))"
+
+    elif flag == False:
+
+        query = resource_path + '?' + filt_Thing + "&" + op_expand + "=" + SensorThings[1] + "(" + \
+            filt_Dstr  + '%20and%20properties/type%20eq%20%27measurement%27;' + op_expand + '=' + SensorThings[2] + '(' + op_filter + '=' + \
+            sel_vals['dstr_sel'][2] + "%20ge%20" + Starting_DateTime[0] + "%20%20"+'and%20phenomenonTime%20le%20'+Starting_DateTime[1]\
+                +'%20;' +'$orderby=phenomenonTime%20desc;' + top + "))"
+
+
 
     print(query)
-
     # read from url - execute the query and the response is stored to json obj
     with urllib.request.urlopen(query) as url:
         response = json.loads(url.read().decode())
@@ -430,3 +447,156 @@ def extract_river_sections_loc(service_root_URI, SensorThings, filt_vals, sel_va
         response = json.loads(url.read().decode())
 
     return(response)
+
+#---------------------------------------------------------------------------------------------------------
+#          QUERIES FOR INCIDENT REPORT ALGORITHM
+#--------------------------------------------------
+#
+#   Extract water level from WH_HMP.shp file. Its name in geoserver is geoserver_name.
+#
+def extract_WL_gis(geoserver_name, inc_loc, width_step):
+
+    service_uri = 'https://ilt-geoserver.iosb.fraunhofer.de/beAWARE/wms?SERVICE=WMS&VERSION=1.1.1'
+
+    op_request = 'REQUEST'
+    op_query_layers = 'QUERY_LAYERS'
+    op_layers = 'LAYERS'
+    op_styles = 'STYLES'
+    op_info_format = 'INFO_FORMAT'
+    op_feature_count = 'FEATURE_COUNT'
+    op_X = 'X'
+    op_Y = 'Y'
+    op_srs = 'SRS'
+    op_width = 'WIDTH'
+    op_height = 'HEIGHT'
+    op_bbox = 'BBOX'
+    op_slash = "%2F"
+    op_semi_column = "%3A"
+    op_comma = '%2C'
+
+    geo_query = service_uri + "&" + op_request + "=" +  'GetFeatureInfo' + \
+                    "&" + op_query_layers + "=" + 'beAWARE' + op_semi_column + geoserver_name + \
+                    "&" + op_styles + \
+                    "&" + op_layers + "=" + 'beAWARE' + op_semi_column + geoserver_name + \
+                    "&" + op_info_format + "=" + 'application' + op_slash + 'json' + \
+                    "&" + op_feature_count + "=" + '5000' + \
+                    "&" + op_X + "=" + '0' + \
+                    "&" + op_Y + "=" + '0' + \
+                    "&" + op_srs + "=" + 'EPSG' +  op_semi_column + '4326' + \
+                    "&" + op_width + "=" + '1' + \
+                    "&" + op_height + "=" + '1' + \
+                    "&" + op_bbox + "=" + str( float(inc_loc['long']) - width_step) + \
+                                          op_comma + str( float(inc_loc['lat']) - width_step) +  \
+                                          op_comma + str( float(inc_loc['long']) + width_step) + \
+                                          op_comma + str( float(inc_loc['lat']) + width_step)
+
+    print("\n Query is: \n")
+    print(geo_query)
+
+    # read from url - execute the query and the response is stored to json obj
+    with urllib.request.urlopen(geo_query) as url:
+        response = json.loads(url.read().decode())
+
+    return(response)
+
+#==================================================================================
+#
+def extract_ElementAtRisk_gis(shapefile_name, inc_loc):
+
+    service_uri = 'https://ilt-geoserver.iosb.fraunhofer.de/beAWARE/wms?SERVICE=WMS&VERSION=1.1.1'
+
+    op_request = 'REQUEST'
+    op_query_layers = 'QUERY_LAYERS'
+    op_layers = 'LAYERS'
+    op_styles = 'STYLES'
+    op_info_format = 'INFO_FORMAT'
+    op_feature_count = 'FEATURE_COUNT'
+    op_X = 'X'
+    op_Y = 'Y'
+    op_srs = 'SRS'
+    op_width = 'WIDTH'
+    op_height = 'HEIGHT'
+    op_bbox = 'BBOX'
+    op_slash = "%2F"
+    op_semi_column = "%3A"
+    op_comma = '%2C'
+
+    width_step = 0.0005
+    geo_query = service_uri + "&" + op_request + "=" + 'GetFeatureInfo' + \
+                "&" + op_query_layers + "=" + 'beAWARE' + op_semi_column + shapefile_name + \
+                "&" + op_styles + \
+                "&" + op_layers + "=" + 'beAWARE' + op_semi_column + shapefile_name + \
+                "&" + op_info_format + "=" + 'application' + op_slash + 'json' + \
+                "&" + op_feature_count + "=" + '5000' + \
+                "&" + op_X + "=" + '0' + \
+                "&" + op_Y + "=" + '0' + \
+                "&" + op_srs + "=" + 'EPSG' + op_semi_column + '4326' + \
+                "&" + op_width + "=" + '1' + \
+                "&" + op_height + "=" + '1' + \
+                "&" + op_bbox + "=" + str(float(inc_loc['long']) - width_step) + \
+                op_comma + str(float(inc_loc['lat']) - width_step) + \
+                op_comma + str(float(inc_loc['long']) + width_step) + \
+                op_comma + str(float(inc_loc['lat']) + width_step)
+
+    print("\n Query is: \n")
+    print(geo_query)
+
+    # read from url - execute the query and the response is stored to json obj
+    with urllib.request.urlopen(geo_query) as url:
+        response = json.loads(url.read().decode())
+
+    return(response)
+
+#=============================================================================================================
+#
+#   Pre-Emergency Phase: Query to GeoServer in order to extract the list of polygons in which an incident
+#   location is located. The region of search is defined by the box. Its center is defined by the incident
+#   location.
+#
+def bbox_query_riskmaps(geoserver_name, inc_loc, bbox_size):
+    service_uri = 'https://ilt-geoserver.iosb.fraunhofer.de/beAWARE/wms?SERVICE=WMS&VERSION=1.1.1'
+
+    op_request = 'REQUEST'
+    op_query_layers = 'QUERY_LAYERS'
+    op_layers = 'LAYERS'
+    op_styles = 'STYLES'
+    op_info_format = 'INFO_FORMAT'
+    op_feature_count = 'FEATURE_COUNT'
+    op_count = '100'
+    op_X = 'X'
+    op_Y = 'Y'
+    op_srs = 'SRS'
+    op_width = 'WIDTH'
+    op_height = 'HEIGHT'
+    op_bbox = 'BBOX'
+    op_slash = "%2F"
+    op_semi_column = "%3A"
+    op_comma = '%2C'
+
+    width_step = bbox_size['width']
+    height_step = bbox_size['height']
+
+    geo_query = service_uri + "&" + op_request + "=" + 'GetFeatureInfo' + \
+                "&" + op_query_layers + "=" + 'beAWARE' + op_semi_column + geoserver_name + \
+                "&" + op_styles + \
+                "&" + op_layers + "=" + 'beAWARE' + op_semi_column + geoserver_name + \
+                "&" + op_info_format + "=" + 'application' + op_slash + 'json' + \
+                "&" + op_feature_count + "=" + op_count + \
+                "&" + op_X + "=" + '0' + \
+                "&" + op_Y + "=" + '0' + \
+                "&" + op_srs + "=" + 'EPSG' + op_semi_column + '4326' + \
+                "&" + op_width + "=" + '1' + \
+                "&" + op_height + "=" + '1' + \
+                "&" + op_bbox + "=" + str(float(inc_loc['long']) - width_step) + \
+                op_comma + str(float(inc_loc['lat']) - width_step) + \
+                op_comma + str(float(inc_loc['long']) + width_step) + \
+                op_comma + str(float(inc_loc['lat']) + width_step)
+
+    print("\nQuery is: \n")
+    print(geo_query)
+
+    # read from url - execute the query and the response is stored to json obj
+    with urllib.request.urlopen(geo_query) as url:
+        response = json.loads(url.read().decode())
+
+    return (response)
