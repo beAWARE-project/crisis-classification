@@ -17,7 +17,7 @@
 #   - data from GIS files
 
 import os, time
-import pandas as pd
+from pandas import DataFrame, ExcelWriter
 from datetime import datetime, timedelta
 from CRCL.FloodCRisisCLassification.Auxiliary_Functions_Risk_v02 import *
 from CRCL.FloodCRisisCLassification.Create_Queries import *
@@ -579,8 +579,8 @@ def CrisisClassificationFlood_Emerg_IncRep_v2(cur_date, URI, Incident_loc, URI_t
         print( time_it['Description'], ": ", time_it['Time Step in sec.'], " seconds. \n" )
 
 
-    Timers = pd.DataFrame(time_duration_step, columns=['Description', 'Time Step in sec.'])
-    xlsEv = pd.ExcelWriter(directory + "/" + "Time_Evaluation_Emerg_IncReports_Results.xlsx")
+    Timers = DataFrame(time_duration_step, columns=['Description', 'Time Step in sec.'])
+    xlsEv = ExcelWriter(directory + "/" + "Time_Evaluation_Emerg_IncReports_Results.xlsx")
     Timers.to_excel(xlsEv, 'Evaluation_Time', index=False)
     xlsEv.save()
 

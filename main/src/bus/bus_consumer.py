@@ -106,10 +106,13 @@ class BusConsumer:
 
                 # self.submit_message_to_database(message_text)
                 print("\n INSIDE METHOD listen \n")
-                # print(len(message_text))
+                print( message_text )
 
-                json_msg = json.loads(message_text)
-                # self.submit_message_to_crcl(json_msg)
+                if message_text == None:
+                    print("Error: message is None! Please provide a new correct message!")
+                else:
+                    json_msg = json.loads(message_text)
+                    # self.submit_message_to_crcl(json_msg)
 
                 # Runs automatically when it receives a message
                 t = Thread(target=self.submit_message_to_crcl, args=(json_msg, Topic_Type,))

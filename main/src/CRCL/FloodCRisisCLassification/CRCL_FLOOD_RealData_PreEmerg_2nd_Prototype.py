@@ -39,7 +39,6 @@ import json, time, re
 import os, errno
 from pathlib import Path
 from pandas import read_csv, DataFrame, concat, ExcelWriter, read_excel
-import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from math import pow, ceil
@@ -125,7 +124,7 @@ def CrisisClassificationFlood_PreEmerg_RealData_v2(cur_date, flag_mode, time_mod
 
     # excel
     # Store FWI dataframe to excel file
-    xls = pd.ExcelWriter(directory + "/" + "mappingRS.xlsx")
+    xls = ExcelWriter(directory + "/" + "mappingRS.xlsx")
     mapRS_df.to_excel(xls, 'Sheet1', index=False)
     xls.save()
 
@@ -216,7 +215,7 @@ def CrisisClassificationFlood_PreEmerg_RealData_v2(cur_date, flag_mode, time_mod
     colnames = ['RS_ID_AAWA', 'Name', 'RS_ID_SensorThingServer', 'RS_Critical', 'RS_Group',
                 'RS_GroupName', 'RS_GroupDescr']
 
-    IntRS = pd.DataFrame(list(data_RS), columns=colnames)
+    IntRS = DataFrame(list(data_RS), columns=colnames)
 
     # Set constant variables which are utilised to create the query to extract Observations of each River Section
     #
@@ -759,7 +758,7 @@ def CrisisClassificationFlood_PreEmerg_RealData_v2(cur_date, flag_mode, time_mod
                     ['Total Time', Full_Time_secs, Full_Time]
                     ]
 
-    Timers = pd.DataFrame(Timers_lists, columns = ['Timer', 'Seconds', 'Minutes'])
+    Timers = DataFrame(Timers_lists, columns = ['Timer', 'Seconds', 'Minutes'])
 
     Counter_lists = [ ['Total TOP104 ', total_top104], ['Topics 104 for WL', tp41],
                       ['Topics 104 Critical Line Plot ', tp42],
@@ -768,9 +767,9 @@ def CrisisClassificationFlood_PreEmerg_RealData_v2(cur_date, flag_mode, time_mod
                       ['Number of unique polygons', len(polygons_id)]
                     ]
 
-    Counters = pd.DataFrame(Counter_lists, columns = ['Description', 'Number'])
+    Counters = DataFrame(Counter_lists, columns = ['Description', 'Number'])
 
-    xlsEv = pd.ExcelWriter(directory + "/" + "Evaluation_Results_RealData.xlsx")
+    xlsEv = ExcelWriter(directory + "/" + "Evaluation_Results_RealData.xlsx")
     Timers.to_excel(xlsEv, 'Evaluation_Time', index=False)
     Counters.to_excel(xlsEv,'Evaluation_Counter',index=False)
     xlsEv.save()

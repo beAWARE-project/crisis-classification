@@ -37,7 +37,6 @@ import json, time, re
 import os, errno
 from pathlib import Path
 from pandas import read_csv, DataFrame, concat, ExcelWriter, read_excel
-import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from math import pow, ceil
@@ -126,20 +125,20 @@ def CrisisClassificationFlood_PreEmerg_v2(cur_date, flag_mode, session):
 
     # excel
     # Store FWI dataframe to excel file
-    xls = pd.ExcelWriter(directory + "/" + "mappingRS.xlsx")
+    xls = ExcelWriter(directory + "/" + "mappingRS.xlsx")
     mapRS_df.to_excel(xls, 'Sheet1', index=False)
     xls.save()
 
     # Read the new excel files for the pilot
     if session == '4March':
         xlsx_name = root_path_dir + 'Forecasts_4March_1stThres.xlsx'
-        df_Forecasts_March = pd.read_excel(xlsx_name, sheet_name=session)
+        df_Forecasts_March = read_excel(xlsx_name, sheet_name=session)
     elif session == '5March':
         xlsx_name = root_path_dir + 'Forecasts_5March_2ndThres.xlsx'
-        df_Forecasts_March = pd.read_excel(xlsx_name, sheet_name=session)
+        df_Forecasts_March = read_excel(xlsx_name, sheet_name=session)
     elif session == '6March':
         xlsx_name = root_path_dir + 'Forecasts_6March_3rdThres.xlsx'
-        df_Forecasts_March = pd.read_excel(xlsx_name, sheet_name=session)
+        df_Forecasts_March = read_excel(xlsx_name, sheet_name=session)
 
     # Convert DataTime by 18h ahead
     tempTime = DataFrame(df_Forecasts_March['phenomenonTime'].apply(lambda x: x + timedelta(hours=18)))
@@ -234,7 +233,7 @@ def CrisisClassificationFlood_PreEmerg_v2(cur_date, flag_mode, session):
     colnames = ['RS_ID_AAWA', 'Name', 'RS_ID_SensorThingServer', 'RS_Critical', 'RS_Group',
                 'RS_GroupName', 'RS_GroupDescr']
 
-    IntRS = pd.DataFrame(list(data_RS), columns=colnames)
+    IntRS = DataFrame(list(data_RS), columns=colnames)
 
     ########################################################################################
     #	
@@ -763,7 +762,7 @@ def CrisisClassificationFlood_PreEmerg_v2(cur_date, flag_mode, session):
                     ['Total Time', Full_Time_secs, Full_Time]
                     ]
 
-    Timers = pd.DataFrame(Timers_lists, columns = ['Timer', 'Seconds', 'Minutes'])
+    Timers = DataFrame(Timers_lists, columns = ['Timer', 'Seconds', 'Minutes'])
 
     Counter_lists = [ ['Total TOP104 ', total_top104], ['Topics 104 for WL', tp41],
                       ['Topics 104 Critical Line Plot ', tp42],
@@ -772,9 +771,9 @@ def CrisisClassificationFlood_PreEmerg_v2(cur_date, flag_mode, session):
                       ['Number of unique polygons', len(polygons_id)]
                     ]
 
-    Counters = pd.DataFrame(Counter_lists, columns = ['Description', 'Number'])
+    Counters = DataFrame(Counter_lists, columns = ['Description', 'Number'])
 
-    xlsEv = pd.ExcelWriter(directory + "/" + "Evaluation_Results.xlsx")
+    xlsEv = ExcelWriter(directory + "/" + "Evaluation_Results.xlsx")
     Timers.to_excel(xlsEv, 'Evaluation_Time', index=False)
     Counters.to_excel(xlsEv,'Evaluation_Counter',index=False)
     xlsEv.save()

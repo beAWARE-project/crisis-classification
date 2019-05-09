@@ -33,7 +33,7 @@ import numpy as np
 from pathlib import Path
 from collections import OrderedDict
 
-import pandas as pd
+from pandas import DataFrame, ExcelWriter
 
 from CRCL.FloodCRisisCLassification.Topic104_Metric_Report import Top104_Metric_Report
 from CRCL.FloodCRisisCLassification.topic104_Flood_Emerg import *
@@ -495,7 +495,7 @@ def CrisisClassificationFlood_RealData_Emerg_v2(cur_date, flag_mode):
                     ['Total Time', total_time, Total_Time_min]
                     ]
 
-    Timers = pd.DataFrame(Timers_lists, columns=['Timer', 'Seconds', 'Minutes'])
+    Timers = DataFrame(Timers_lists, columns=['Timer', 'Seconds', 'Minutes'])
 
 
     Counters_list = [ ['Topics_104 for dashboard', count_top104_WL, count_top104_PR ],
@@ -503,9 +503,9 @@ def CrisisClassificationFlood_RealData_Emerg_v2(cur_date, flag_mode):
                       ['Topics 006', count_top006_WL, count_top006_PR],
                       ['Topic 104 Overall Crisis level', count_top104_OCL, None]]
 
-    Counters = pd.DataFrame(Counters_list, columns = ['Description', 'Water Level', 'Precipitation'])
+    Counters = DataFrame(Counters_list, columns = ['Description', 'Water Level', 'Precipitation'])
 
-    xlsEv = pd.ExcelWriter(directory + "/" + "Evaluation_RealData_Results.xlsx")
+    xlsEv = ExcelWriter(directory + "/" + "Evaluation_RealData_Results.xlsx")
     Timers.to_excel(xlsEv, 'Evaluation_Time', index=False)
     Counters.to_excel(xlsEv,'Evaluation_Counter',index=False)
     xlsEv.save()

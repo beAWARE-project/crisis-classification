@@ -33,7 +33,7 @@ import numpy as np
 from pathlib import Path
 from collections import OrderedDict
 
-import pandas as pd
+from pandas import ExcelWriter, DataFrame, read_excel
 
 from CRCL.FloodCRisisCLassification.Topic104_Metric_Report import Top104_Metric_Report
 from CRCL.FloodCRisisCLassification.topic104_Flood_Emerg import *
@@ -95,7 +95,7 @@ def CrisisClassificationFlood_Emerg_v2(cur_date, flag_mode, session):
     # Obtain data from Excel file
     #
     xlsx_name = root_path + 'ObservedData_Sensors.xlsx'
-    df_ObservedData = pd.read_excel(xlsx_name, sheet_name='Sheet1')
+    df_ObservedData = read_excel(xlsx_name, sheet_name='Sheet1')
 
     df_ObservedData.reset_index(drop=True, inplace=True)
 
@@ -607,7 +607,7 @@ def CrisisClassificationFlood_Emerg_v2(cur_date, flag_mode, session):
                     ['Total Time', total_time, Total_Time_min]
                     ]
 
-    Timers = pd.DataFrame(Timers_lists, columns=['Timer', 'Seconds', 'Minutes'])
+    Timers = DataFrame(Timers_lists, columns=['Timer', 'Seconds', 'Minutes'])
 
 
     Counters_list = [ ['Topics_104 for dashboard', count_top104_WL, count_top104_PR ],
@@ -615,9 +615,9 @@ def CrisisClassificationFlood_Emerg_v2(cur_date, flag_mode, session):
                       ['Topics 006', count_top006_WL, count_top006_PR],
                       ['Topic 104 Overall Crisis level', count_top104_OCL, None]]
 
-    Counters = pd.DataFrame(Counters_list, columns = ['Description', 'Water Level', 'Precipitation'])
+    Counters = DataFrame(Counters_list, columns = ['Description', 'Water Level', 'Precipitation'])
 
-    xlsEv = pd.ExcelWriter(directory + "/" + "Evaluation_Results.xlsx")
+    xlsEv = ExcelWriter(directory + "/" + "Evaluation_Results.xlsx")
     Timers.to_excel(xlsEv, 'Evaluation_Time', index=False)
     Counters.to_excel(xlsEv,'Evaluation_Counter',index=False)
     xlsEv.save()
